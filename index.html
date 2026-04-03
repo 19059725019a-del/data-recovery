@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>数据恢复客户检测单</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: linear-gradient(160deg, #0a0a1a 0%, #1a1a3e 40%, #2d1b69 100%);
+  min-height: 100vh; color: #fff; padding: 0 0 60px;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 440px; margin: 0 auto; padding: 16px; }
+.header { text-align: center; padding: 32px 0 20px; }
+.header h1 {
+  font-size: 24px; font-weight: 800; letter-spacing: 1px;
+  background: linear-gradient(135deg, #00cec9, #6C5CE7, #fd79a8);
+  background-size: 200% 200%;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  animation: gradientShift 4s ease infinite;
+}
+@keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+.header p { font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 8px; }
+
+.progress-wrap { padding: 0 4px; margin-bottom: 20px; }
+.progress-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; color: rgba(255,255,255,0.4); }
+.progress-info .step-label { color: #00cec9; font-weight: 600; }
+.progress-bar-bg { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #00cec9, #6C5CE7); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+
+.card {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px; padding: 24px 20px; margin-bottom: 16px;
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+}
+.card-icon { font-size: 28px; margin-bottom: 10px; }
+.card-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.card-desc { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 20px; line-height: 1.5; }
+
+.option-list { display: flex; flex-direction: column; gap: 10px; }
+.option-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 15px 16px; border-radius: 14px;
+  background: rgba(255,255,255,0.03); border: 1.5px solid rgba(255,255,255,0.06);
+  cursor: pointer; transition: all 0.25s;
+  -webkit-tap-highlight-color: transparent; user-select: none;
+}
+.option-item:active { transform: scale(0.98); }
+.option-item.selected {
+  background: rgba(108,92,231,0.15); border-color: rgba(108,92,231,0.6);
+  box-shadow: 0 0 20px rgba(108,92,231,0.1);
+}
+.radio {
+  width: 22px; height: 22px; min-width: 22px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center; transition: all 0.25s;
+}
+.option-item.selected .radio { border-color: #6C5CE7; background: #6C5CE7; }
+.radio::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #fff; opacity: 0; transition: opacity 0.2s; }
+.option-item.selected .radio::after { opacity: 1; }
+.option-emoji { font-size: 24px; }
+.option-label { font-size: 15px; flex: 1; line-height: 1.4; }
+
+.input-group { margin-bottom: 16px; }
+.input-label { font-size: 13px; color: rgba(255,255,255,0.45); margin-bottom: 8px; display: block; }
+.input-field {
+  width: 100%; padding: 15px 16px; border-radius: 14px;
+  border: 1.5px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04);
+  color: #fff; font-size: 16px; outline: none; transition: all 0.25s; -webkit-appearance: none;
+}
+.input-field::placeholder { color: rgba(255,255,255,0.2); }
+.input-field:focus { border-color: rgba(108,92,231,0.6); background: rgba(255,255,255,0.06); box-shadow: 0 0 0 3px rgba(108,92,231,0.1); }
+
+.btn-row { display: flex; gap: 12px; margin-top: 24px; }
+.btn {
+  flex: 1; padding: 16px; border: none; border-radius: 14px;
+  font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent; letter-spacing: 0.5px;
+}
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn-next { background: linear-gradient(135deg, #6C5CE7, #a855f7); color: #fff; box-shadow: 0 4px 24px rgba(108,92,231,0.4); }
+.btn-prev { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.08); }
+.btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; }
+.btn-submit { background: linear-gradient(135deg, #00cec9, #00b894); color: #fff; box-shadow: 0 4px 24px rgba(0,206,201,0.35); }
+.spinner { display: inline-block; width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 8px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.result-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 28px 22px; margin-top: 12px; backdrop-filter: blur(20px); }
+.result-badge { text-align: center; padding: 8px 20px; border-radius: 20px; background: linear-gradient(135deg, rgba(0,206,201,0.15), rgba(108,92,231,0.15)); border: 1px solid rgba(0,206,201,0.2); font-size: 13px; color: #00cec9; font-weight: 600; display: inline-block; margin-bottom: 16px; width: 100%; }
+.result-title { text-align: center; font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.result-subtitle { text-align: center; font-size: 12px; color: rgba(255,255,255,0.35); margin-bottom: 24px; }
+.result-section { margin-bottom: 16px; }
+.result-section-title { font-size: 12px; color: rgba(255,255,255,0.35); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; padding-left: 2px; }
+.result-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 14px; }
+.result-row:last-child { border-bottom: none; }
+.result-key { color: rgba(255,255,255,0.4); }
+.result-val { font-weight: 600; text-align: right; max-width: 60%; }
+
+.advice-box { margin-top: 16px; padding: 18px; border-radius: 16px; background: linear-gradient(135deg, rgba(0,206,201,0.08), rgba(108,92,231,0.08)); border: 1px solid rgba(0,206,201,0.12); }
+.advice-rate { text-align: center; font-size: 36px; font-weight: 900; background: linear-gradient(135deg, #00cec9, #6C5CE7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
+.advice-rate-label { text-align: center; font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 14px; }
+.advice-text { font-size: 13px; line-height: 2; color: rgba(255,255,255,0.6); }
+.advice-text b { color: #00cec9; }
+.advice-privacy { margin-top: 14px; padding: 14px; border-radius: 12px; background: rgba(108,92,231,0.08); border: 1px solid rgba(108,92,231,0.12); font-size: 12px; line-height: 1.8; color: rgba(255,255,255,0.45); }
+.advice-privacy .label { color: #a855f7; font-weight: 600; display: block; margin-bottom: 4px; }
+
+.submit-status { text-align: center; padding: 14px; border-radius: 14px; margin-top: 16px; font-size: 14px; line-height: 1.6; }
+.submit-status.ok { background: rgba(0,206,201,0.1); border: 1px solid rgba(0,206,201,0.15); color: #00cec9; }
+.submit-status.err { background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.15); color: #ff6b6b; }
+
+.copy-btn { width: 100%; padding: 16px; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 16px; background: linear-gradient(135deg, #00cec9, #00b894); color: #fff; box-shadow: 0 4px 24px rgba(0,206,201,0.3); transition: all 0.25s; }
+.copy-btn:active { transform: scale(0.97); }
+.copy-btn.done { background: linear-gradient(135deg, #00b894, #00cec9); }
+.reset-btn { width: 100%; padding: 14px; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.4); font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 12px; }
+
+.toast { position: fixed; top: 50px; left: 50%; transform: translateX(-50%) translateY(-20px); background: rgba(0,0,0,0.85); color: #fff; padding: 12px 28px; border-radius: 24px; font-size: 14px; font-weight: 500; opacity: 0; transition: all 0.35s; z-index: 999; pointer-events: none; white-space: nowrap; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.page { display: none; }
+.page.active { display: block; animation: slideIn 0.35s ease; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+<div class="container">
+
+  <div class="header">
+    <h1>📱 数据恢复检测单</h1>
+    <p>专业检测 · 快速评估 · 帮您找回重要数据</p>
+  </div>
+
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-info">
+      <span class="step-label" id="stepLabel">第 1 步 / 共 6 步</span>
+      <span id="stepPercent">0%</span>
+    </div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressBar" style="width: 0%"></div></div>
+  </div>
+
+  <!-- 第一步：手机类型 -->
+  <div class="page active" id="page1">
+    <div class="card">
+      <div class="card-icon">🔧</div>
+      <div class="card-title">手机类型</div>
+      <div class="card-desc">请选择您需要恢复数据的手机品牌</div>
+      <div class="option-list">
+        <div class="option-item" data-value="苹果 iPhone" onclick="pick('phoneType',this)"><span class="option-emoji">🍎</span><span class="option-label">苹果 iPhone</span><span class="radio"></span></div>
+        <div class="option-item" data-value="华为" onclick="pick('phoneType',this)"><span class="option-emoji">📲</span><span class="option-label">华为</span><span class="radio"></span></div>
+        <div class="option-item" data-value="小米" onclick="pick('phoneType',this)"><span class="option-emoji">📱</span><span class="option-label">小米</span><span class="radio"></span></div>
+        <div class="option-item" data-value="OPPO" onclick="pick('phoneType',this)"><span class="option-emoji">📲</span><span class="option-label">OPPO</span><span class="radio"></span></div>
+        <div class="option-item" data-value="vivo" onclick="pick('phoneType',this)"><span class="option-emoji">📱</span><span class="option-label">vivo</span><span class="radio"></span></div>
+        <div class="option-item" data-value="其他品牌" onclick="pick('phoneType',this)"><span class="option-emoji">📟</span><span class="option-label">其他品牌</span><span class="radio"></span></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-next" onclick="next(2)" disabled id="btn1">下一步 →</button></div>
+    </div>
+  </div>
+
+  <!-- 第二步：数据丢失时间 -->
+  <div class="page" id="page2">
+    <div class="card">
+      <div class="card-icon">⏰</div>
+      <div class="card-title">数据丢失时间</div>
+      <div class="card-desc">请选择数据丢失大概有多久</div>
+      <div class="option-list">
+        <div class="option-item" data-value="1个月内" onclick="pick('lostTime',this)"><span class="option-emoji">🟢</span><span class="option-label">1个月内</span><span class="radio"></span></div>
+        <div class="option-item" data-value="6个月内" onclick="pick('lostTime',this)"><span class="option-emoji">🟡</span><span class="option-label">6个月内</span><span class="radio"></span></div>
+        <div class="option-item" data-value="3年内" onclick="pick('lostTime',this)"><span class="option-emoji">🟠</span><span class="option-label">3年内</span><span class="radio"></span></div>
+        <div class="option-item" data-value="3年以上" onclick="pick('lostTime',this)"><span class="option-emoji">🔴</span><span class="option-label">3年以上</span><span class="radio"></span></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-prev" onclick="prev(1)">← 上一步</button><button class="btn btn-next" onclick="next(3)" disabled id="btn2">下一步 →</button></div>
+    </div>
+  </div>
+
+  <!-- 第三步：需要恢复的内容 -->
+  <div class="page" id="page3">
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <div class="card-title">需要恢复的内容</div>
+      <div class="card-desc">请选择您最需要恢复的数据类型</div>
+      <div class="option-list">
+        <div class="option-item" data-value="微信聊天记录" onclick="pick('dataType',this)"><span class="option-emoji">💬</span><span class="option-label">微信聊天记录</span><span class="radio"></span></div>
+        <div class="option-item" data-value="QQ聊天记录" onclick="pick('dataType',this)"><span class="option-emoji">🐧</span><span class="option-label">QQ聊天记录</span><span class="radio"></span></div>
+        <div class="option-item" data-value="通话记录" onclick="pick('dataType',this)"><span class="option-emoji">📞</span><span class="option-label">通话记录</span><span class="radio"></span></div>
+        <div class="option-item" data-value="相册照片" onclick="pick('dataType',this)"><span class="option-emoji">🖼️</span><span class="option-label">相册照片</span><span class="radio"></span></div>
+        <div class="option-item" data-value="其他数据" onclick="pick('dataType',this)"><span class="option-emoji">📁</span><span class="option-label">其他数据</span><span class="radio"></span></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-prev" onclick="prev(2)">← 上一步</button><button class="btn btn-next" onclick="next(4)" disabled id="btn3">下一步 →</button></div>
+    </div>
+  </div>
+
+  <!-- 第四步：手机其他操作 -->
+  <div class="page" id="page4">
+    <div class="card">
+      <div class="card-icon">⚙️</div>
+      <div class="card-title">手机其他操作</div>
+      <div class="card-desc">数据丢失后，手机有没有做过以下操作？（影响恢复概率）</div>
+      <div class="option-list">
+        <div class="option-item" data-value="恢复出厂设置" onclick="pick('phoneAction',this)"><span class="option-emoji">🔄</span><span class="option-label">恢复出厂设置</span><span class="radio"></span></div>
+        <div class="option-item" data-value="卸载相关APP" onclick="pick('phoneAction',this)"><span class="option-emoji">🗑️</span><span class="option-label">卸载相关APP</span><span class="radio"></span></div>
+        <div class="option-item" data-value="手机系统更新" onclick="pick('phoneAction',this)"><span class="option-emoji">📲</span><span class="option-label">手机系统更新版本</span><span class="radio"></span></div>
+        <div class="option-item" data-value="换手机没做过迁移" onclick="pick('phoneAction',this)"><span class="option-emoji">📲</span><span class="option-label">换过手机，没有做过数据迁移</span><span class="radio"></span></div>
+        <div class="option-item" data-value="换手机做过迁移" onclick="pick('phoneAction',this)"><span class="option-emoji">✅</span><span class="option-label">换过手机，做过数据迁移</span><span class="radio"></span></div>
+        <div class="option-item" data-value="没有任何操作" onclick="pick('phoneAction',this)"><span class="option-emoji">🟢</span><span class="option-label">没有任何操作</span><span class="radio"></span></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-prev" onclick="prev(3)">← 上一步</button><button class="btn btn-next" onclick="next(5)" disabled id="btn4">下一步 →</button></div>
+    </div>
+  </div>
+
+  <!-- 第五步：数据丢失原因 -->
+  <div class="page" id="page5">
+    <div class="card">
+      <div class="card-icon">🔍</div>
+      <div class="card-title">数据丢失原因</div>
+      <div class="card-desc">请选择当时数据是怎么丢失的</div>
+      <div class="option-list">
+        <div class="option-item" data-value="互相删除好友" onclick="pick('lostReason',this)"><span class="option-emoji">👋</span><span class="option-label">互相删除好友</span><span class="radio"></span></div>
+        <div class="option-item" data-value="我把对方删除好友" onclick="pick('lostReason',this)"><span class="option-emoji">✖️</span><span class="option-label">我把对方删除好友</span><span class="radio"></span></div>
+        <div class="option-item" data-value="对方把我删除好友" onclick="pick('lostReason',this)"><span class="option-emoji">💔</span><span class="option-label">对方把我删除好友</span><span class="radio"></span></div>
+        <div class="option-item" data-value="手动删除" onclick="pick('lostReason',this)"><span class="option-emoji">🗑️</span><span class="option-label">手动删除</span><span class="radio"></span></div>
+        <div class="option-item" data-value="手机自动更新" onclick="pick('lostReason',this)"><span class="option-emoji">📲</span><span class="option-label">手机自动更新</span><span class="radio"></span></div>
+        <div class="option-item" data-value="刷机或卸载软件" onclick="pick('lostReason',this)"><span class="option-emoji">⚙️</span><span class="option-label">手机刷机或卸载软件</span><span class="radio"></span></div>
+        <div class="option-item" data-value="恢复出厂设置" onclick="pick('lostReason',this)"><span class="option-emoji">🔄</span><span class="option-label">恢复出厂设置</span><span class="radio"></span></div>
+        <div class="option-item" data-value="其他原因" onclick="pick('lostReason',this)"><span class="option-emoji">❓</span><span class="option-label">其他原因</span><span class="radio"></span></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-prev" onclick="prev(4)">← 上一步</button><button class="btn btn-next" onclick="next(6)" disabled id="btn5">下一步 →</button></div>
+    </div>
+  </div>
+
+  <!-- 第六步：联系方式 -->
+  <div class="page" id="page6">
+    <div class="card">
+      <div class="card-icon">📝</div>
+      <div class="card-title">联系方式</div>
+      <div class="card-desc">请留下您的联系方式，方便我们尽快联系您</div>
+      <div class="input-group">
+        <label class="input-label">手机号码（必填）</label>
+        <input class="input-field" id="phoneInput" type="tel" placeholder="请输入您的手机号" maxlength="11" inputmode="numeric">
+      </div>
+      <div class="input-group">
+        <label class="input-label">微信号（选填）</label>
+        <input class="input-field" id="wechatInput" type="text" placeholder="请输入您的微信号">
+      </div>
+      <div class="btn-row"><button class="btn btn-prev" onclick="prev(5)">← 上一步</button><button class="btn btn-submit" onclick="submitForm()" id="btn6">提交检测单</button></div>
+    </div>
+  </div>
+
+  <!-- 结果页 -->
+  <div class="page" id="pageResult">
+    <div class="result-card">
+      <div class="result-badge">✅ 检测单已生成</div>
+      <div class="result-title">📋 数据恢复检测单</div>
+      <div class="result-subtitle" id="resultTime"></div>
+      <div class="result-section">
+        <div class="result-section-title">基本信息</div>
+        <div class="result-row"><span class="result-key">手机类型</span><span class="result-val" id="rPhone"></span></div>
+        <div class="result-row"><span class="result-key">丢失时间</span><span class="result-val" id="rLostTime"></span></div>
+        <div class="result-row"><span class="result-key">恢复内容</span><span class="result-val" id="rDataType"></span></div>
+      </div>
+      <div class="result-section">
+        <div class="result-section-title">详细情况</div>
+        <div class="result-row"><span class="result-key">手机操作</span><span class="result-val" id="rAction"></span></div>
+        <div class="result-row"><span class="result-key">丢失原因</span><span class="result-val" id="rReason"></span></div>
+      </div>
+      <div class="result-section">
+        <div class="result-section-title">联系方式</div>
+        <div class="result-row"><span class="result-key">联系电话</span><span class="result-val" id="rPhoneNum"></span></div>
+        <div class="result-row" id="rWechatRow" style="display:none;"><span class="result-key">微信号</span><span class="result-val" id="rWechat"></span></div>
+      </div>
+      <div class="advice-box">
+        <div class="advice-rate" id="adviceRate"></div>
+        <div class="advice-rate-label">预计恢复成功率</div>
+        <div class="advice-text" id="adviceText"></div>
+        <div class="advice-privacy">
+          <span class="label">🔒 隐私安全保障</span>
+          数据恢复由专业机构工程师进行操作，持有相关资质证书，并与客户签署隐私保密协议，全程保障您的数据安全与个人隐私。
+        </div>
+      </div>
+      <div class="submit-status ok" id="submitStatus">✅ 检测单已提交，工作人员会尽快联系您！</div>
+      <button class="copy-btn" id="copyBtn" onclick="copyResult()">📋 一键复制检测单</button>
+    </div>
+    <button class="reset-btn" onclick="resetForm()">🔄 重新填写</button>
+  </div>
+</div>
+
+<script>
+// ============================================
+// 表单数据
+// ============================================
+const D = { phoneType:'', lostTime:'', dataType:'', phoneAction:'', lostReason:'', phone:'', wechat:'' };
+let currentStep = 1;
+
+// ============================================
+// ✏️ 后台配置
+//
+// 📧 邮件通知（FormSubmit.co）
+//    收件邮箱：575205396@qq.com
+//    首次使用需点验证邮件确认
+//    查看记录：https://formsubmit.co/dashboard/575205396@qq.com
+//
+// 🌐 网页后台（JSONBlob.com，免费无需注册）
+//    Blob ID：019d51ab-21f8-7b15-a1f1-8ae3cc033cf5
+//    用 dashboard.html 打开即可查看所有提交
+//    ⚠️ 此 ID 仅你自己使用，勿泄露
+// ============================================
+const FORM_EMAIL = '575205396@qq.com';
+const FORM_ENDPOINT = 'https://formsubmit.co/ajax/' + FORM_EMAIL;
+const BLOB_ID = '019d51ab-21f8-7b15-a1f1-8ae3cc033cf5';
+const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/' + BLOB_ID;
+
+// ============================================
+// 选项选择
+// ============================================
+function pick(field, el) {
+  el.parentElement.querySelectorAll('.option-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  D[field] = el.dataset.value;
+  var btn = document.getElementById('btn' + currentStep);
+  if (btn) btn.disabled = false;
+}
+
+// ============================================
+// 步骤导航
+// ============================================
+function goStep(n) {
+  currentStep = n;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  if (n <= 6) {
+    document.getElementById('page' + n).classList.add('active');
+    var pct = Math.round(((n - 1) / 6) * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('stepLabel').textContent = '第 ' + n + ' 步 / 共 6 步';
+    document.getElementById('stepPercent').textContent = pct + '%';
+    document.getElementById('progressWrap').classList.remove('hidden');
+  } else {
+    document.getElementById('pageResult').classList.add('active');
+    document.getElementById('progressWrap').classList.add('hidden');
+    document.getElementById('progressBar').style.width = '100%';
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function next(n) { goStep(n); }
+function prev(n) { goStep(n); }
+
+// ============================================
+// 提交表单
+// ============================================
+function submitForm() {
+  var phone = document.getElementById('phoneInput').value.trim();
+  var wechat = document.getElementById('wechatInput').value.trim();
+  if (!phone) { showToast('请输入手机号码'); return; }
+  if (!/^1\d{10}$/.test(phone)) { showToast('请输入正确的手机号码'); return; }
+  D.phone = phone; D.wechat = wechat;
+
+  var btn = document.getElementById('btn6');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>提交中...';
+
+  var now = new Date();
+  var timeStr = now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+pad(now.getHours())+':'+pad(now.getMinutes());
+
+  document.getElementById('resultTime').textContent = '检测时间：' + timeStr;
+  document.getElementById('rPhone').textContent = D.phoneType;
+  document.getElementById('rLostTime').textContent = D.lostTime;
+  document.getElementById('rDataType').textContent = D.dataType;
+  document.getElementById('rAction').textContent = D.phoneAction;
+  document.getElementById('rReason').textContent = D.lostReason;
+  document.getElementById('rPhoneNum').textContent = D.phone;
+  if (wechat) { document.getElementById('rWechatRow').style.display = 'flex'; document.getElementById('rWechat').textContent = wechat; }
+  else { document.getElementById('rWechatRow').style.display = 'none'; }
+
+  var advice = getAdvice(D.phoneAction, D.lostTime, D.dataType);
+  document.getElementById('adviceRate').textContent = advice.rate;
+  document.getElementById('adviceText').innerHTML = advice.text;
+  generateCopyText(timeStr);
+
+  // 1. 保存到 JSONBlob（网页后台用）
+  var record = { time:timeStr, phoneType:D.phoneType, lostTime:D.lostTime, dataType:D.dataType, phoneAction:D.phoneAction, lostReason:D.lostReason, phone:D.phone, wechat:wechat||'', rate:advice.rate };
+
+  fetch(BLOB_URL).then(function(r){ return r.json(); }).then(function(data){
+    if (!data.submissions) data.submissions = [];
+    data.submissions.unshift(record);
+    if (data.submissions.length > 500) data.submissions = data.submissions.slice(0, 500);
+    return fetch(BLOB_URL, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+  }).then(function(){
+    document.getElementById('submitStatus').className = 'submit-status ok';
+    document.getElementById('submitStatus').innerHTML = '✅ 检测单已提交，工作人员会尽快联系您！';
+  }).catch(function(){
+    document.getElementById('submitStatus').className = 'submit-status err';
+    document.getElementById('submitStatus').innerHTML = '⚠️ 网络原因提交失败，请复制检测单发给客服。';
+  }).finally(function(){
+    // 2. 发邮件通知（异步，不阻塞）
+    var mailData = { _subject:'📱 新客户数据恢复检测单', '手机类型':D.phoneType, '丢失时间':D.lostTime, '恢复内容':D.dataType, '手机操作':D.phoneAction, '丢失原因':D.lostReason, '联系电话':D.phone, '微信号':wechat||'未填写', '检测时间':timeStr, '恢复概率':advice.rate };
+    fetch(FORM_ENDPOINT, { method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify(mailData) }).catch(function(){});
+
+    btn.disabled = false; btn.textContent = '提交检测单';
+    goStep(7);
+  });
+}
+
+// ============================================
+// 恢复建议逻辑
+// 恢复出厂设置/卸载相关APP/手机系统更新/换手机没做过迁移 → 50%-70%
+// 其他情况 → 90%-99%
+// ============================================
+function getAdvice(action, lostTime, dataType) {
+  var lowRateActions = ['恢复出厂设置', '卸载相关APP', '手机系统更新', '换手机没做过迁移'];
+  var isLowRate = lowRateActions.indexOf(action) !== -1;
+  var rate, text;
+
+  if (isLowRate) {
+    var base = action === '恢复出厂设置' ? 50 : 55;
+    rate = (base + Math.floor(Math.random() * 16)) + '%';
+    var actionTip = '';
+    if (action === '恢复出厂设置') actionTip = '恢复出厂设置会清除存储分区的大部分数据，但专业设备仍可通过底层芯片扫描尝试恢复残留数据碎片。';
+    else if (action === '卸载相关APP') actionTip = '卸载APP通常会清除应用缓存和数据目录，但数据库文件可能仍有残留，需要深度扫描。';
+    else if (action === '手机系统更新') actionTip = '系统更新过程中可能会覆盖部分存储区域，建议尽快进行检测，避免进一步数据覆盖。';
+    else actionTip = '旧手机上的数据通常仍然保留，请提供旧手机进行检测恢复。';
+    text = '<b>💡 恢复建议：</b><br>' + actionTip + '<br><br><b>📌 温馨提示：</b>请尽量不要继续使用手机，避免新数据覆盖需要恢复的区域。';
+  } else {
+    rate = (90 + Math.floor(Math.random() * 10)) + '%';
+    var typeTip = '';
+    if (dataType === '微信聊天记录') typeTip = '微信聊天记录在手机本地有数据库备份，恢复成功率非常高。请暂时不要使用微信。';
+    else if (dataType === 'QQ聊天记录') typeTip = 'QQ聊天记录存储在本地数据库中，恢复成功率很高。建议暂时不要登录QQ。';
+    else if (dataType === '通话记录') typeTip = '通话记录存储在系统数据库中，恢复成功率极高。';
+    else if (dataType === '相册照片') typeTip = '照片文件通常存储在相册目录，恢复成功率非常高。请勿继续拍照。';
+    else typeTip = '数据恢复成功率很高，请保留手机当前状态。';
+    text = '<b>💡 恢复建议：</b><br>' + typeTip + '<br><br><b>📌 温馨提示：</b>在等待恢复期间，请尽量不要使用手机或进行大文件操作。';
+  }
+  return { rate:rate, text:text };
+}
+
+// ============================================
+// 复制文本模板
+// ============================================
+var copyText = '';
+function generateCopyText(timeStr) {
+  var wc = D.wechat ? '\n微信号：' + D.wechat : '';
+  copyText = '📋 数据恢复检测单\n━━━━━━━━━━━━━━━\n检测时间：' + timeStr + '\n手机类型：' + D.phoneType + '\n丢失时间：' + D.lostTime + '\n恢复内容：' + D.dataType + '\n手机操作：' + D.phoneAction + '\n丢失原因：' + D.lostReason + '\n联系电话：' + D.phone + wc + '\n━━━━━━━━━━━━━━━\n🔒 数据恢复由专业机构工程师操作，持有相关资质，签署隐私保密协议';
+}
+
+function copyResult() {
+  if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(copyText).then(onCopied).catch(fallbackCopy); } else { fallbackCopy(); }
+}
+function fallbackCopy() {
+  var ta = document.createElement('textarea'); ta.value = copyText; ta.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); onCopied(); } catch(e) { showToast('复制失败'); } document.body.removeChild(ta);
+}
+function onCopied() {
+  var btn = document.getElementById('copyBtn'); btn.textContent = '✅ 已复制，发给客服即可！'; btn.classList.add('done'); showToast('已复制到剪贴板');
+  setTimeout(function(){ btn.textContent = '📋 一键复制检测单'; btn.classList.remove('done'); }, 3000);
+}
+
+function resetForm() {
+  D.phoneType=''; D.lostTime=''; D.dataType=''; D.phoneAction=''; D.lostReason=''; D.phone=''; D.wechat='';
+  document.querySelectorAll('.option-item').forEach(function(i){ i.classList.remove('selected'); });
+  document.getElementById('phoneInput').value = ''; document.getElementById('wechatInput').value = '';
+  for (var i=1;i<=5;i++){ var b=document.getElementById('btn'+i); if(b) b.disabled=true; }
+  document.getElementById('submitStatus').className = 'submit-status ok';
+  document.getElementById('submitStatus').innerHTML = '✅ 检测单已提交，工作人员会尽快联系您！';
+  goStep(1);
+}
+
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+function showToast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },2000); }
+</script>
+</body>
+</html>
