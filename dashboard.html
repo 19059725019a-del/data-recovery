@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 检测单管理后台</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: #0f1117; color: #e0e0e0; min-height: 100vh;
+}
+.header {
+  background: linear-gradient(135deg, #1a1a3e, #2d1b69);
+  padding: 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.header h1 { font-size: 20px; color: #fff; }
+.header p { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+.toolbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; gap: 12px; flex-wrap: wrap;
+  background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.stat { font-size: 13px; color: rgba(255,255,255,0.5); }
+.stat b { color: #00cec9; font-size: 18px; margin-left: 4px; }
+.btn-refresh {
+  padding: 8px 20px; border: 1px solid rgba(108,92,231,0.4); border-radius: 8px;
+  background: rgba(108,92,231,0.15); color: #a78bfa; font-size: 13px;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-refresh:hover { background: rgba(108,92,231,0.3); }
+.list { padding: 12px 16px; }
+.empty { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.2); font-size: 14px; }
+.card {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px; padding: 18px; margin-bottom: 12px;
+  transition: all 0.2s;
+}
+.card:hover { background: rgba(255,255,255,0.06); }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.card-time { font-size: 12px; color: rgba(255,255,255,0.35); }
+.card-rate {
+  padding: 3px 12px; border-radius: 12px; font-size: 13px; font-weight: 700;
+}
+.rate-high { background: rgba(0,206,201,0.15); color: #00cec9; }
+.rate-low { background: rgba(255,165,2,0.15); color: #ffa502; }
+.card-contact {
+  display: flex; gap: 12px; margin-bottom: 12px;
+}
+.contact-item {
+  flex: 1; padding: 10px 14px; border-radius: 10px;
+  background: rgba(108,92,231,0.1); border: 1px solid rgba(108,92,231,0.15);
+  text-align: center;
+}
+.contact-label { font-size: 11px; color: rgba(255,255,255,0.35); }
+.contact-val { font-size: 16px; font-weight: 700; color: #fff; margin-top: 2px; }
+.card-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.detail-item { padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.02); font-size: 13px; }
+.detail-key { color: rgba(255,255,255,0.3); font-size: 11px; }
+.detail-val { color: rgba(255,255,255,0.8); font-weight: 500; margin-top: 2px; }
+
+.loading { text-align: center; padding: 40px; color: rgba(255,255,255,0.3); }
+.spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.1); border-top-color: #6C5CE7; border-radius: 50%; animation: spin 0.6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.toast {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
+  background: rgba(0,0,0,0.85); color: #fff; padding: 10px 24px; border-radius: 20px;
+  font-size: 13px; opacity: 0; transition: all 0.3s; z-index: 999; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* 自适应手机 */
+@media (max-width: 500px) {
+  .card-detail { grid-template-columns: 1fr; }
+  .card-contact { flex-direction: column; gap: 8px; }
+  .toolbar { flex-direction: column; align-items: stretch; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="header">
+  <h1>📋 检测单管理后台</h1>
+  <p>数据恢复客户提交记录 · 自动刷新</p>
+</div>
+
+<div class="toolbar">
+  <div class="stat">共 <b id="totalCount">0</b> 条记录</div>
+  <button class="btn-refresh" onclick="loadData()">🔄 刷新数据</button>
+</div>
+
+<div class="list" id="list">
+  <div class="loading"><div class="spinner"></div><br>正在加载...</div>
+</div>
+
+<script>
+// ============================================
+// ✏️ 后台配置 - Blob ID 必须和表单页面一致
+// Blob ID：019d51ab-21f8-7b15-a1f1-8ae3cc033cf5
+// ============================================
+var BLOB_ID = '019d51ab-21f8-7b15-a1f1-8ae3cc033cf5';
+var BLOB_URL = 'https://jsonblob.com/api/jsonBlob/' + BLOB_ID;
+
+function loadData() {
+  document.getElementById('list').innerHTML = '<div class="loading"><div class="spinner"></div><br>正在加载...</div>';
+
+  fetch(BLOB_URL)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var items = data.submissions || [];
+      document.getElementById('totalCount').textContent = items.length;
+
+      if (items.length === 0) {
+        document.getElementById('list').innerHTML = '<div class="empty">暂无提交记录<br><br>把 data-recovery-checklist.html 发给客户<br>客户提交后这里会自动显示</div>';
+        return;
+      }
+
+      var html = '';
+      for (var i = 0; i < items.length; i++) {
+        var s = items[i];
+        var rateNum = parseInt(s.rate) || 0;
+        var rateClass = rateNum >= 80 ? 'rate-high' : 'rate-low';
+
+        html += '<div class="card">';
+        html += '<div class="card-header"><span class="card-time">🕐 ' + (s.time || '') + '</span><span class="card-rate ' + rateClass + '">恢复率 ' + (s.rate || '?') + '</span></div>';
+
+        // 联系方式（最重要的信息突出显示）
+        html += '<div class="card-contact">';
+        html += '<div class="contact-item"><div class="contact-label">📞 电话</div><div class="contact-val">' + (s.phone || '-') + '</div></div>';
+        if (s.wechat) {
+          html += '<div class="contact-item"><div class="contact-label">💬 微信</div><div class="contact-val">' + s.wechat + '</div></div>';
+        }
+        html += '</div>';
+
+        // 详细信息
+        html += '<div class="card-detail">';
+        html += '<div class="detail-item"><div class="detail-key">手机类型</div><div class="detail-val">' + (s.phoneType || '-') + '</div></div>';
+        html += '<div class="detail-item"><div class="detail-key">丢失时间</div><div class="detail-val">' + (s.lostTime || '-') + '</div></div>';
+        html += '<div class="detail-item"><div class="detail-key">恢复内容</div><div class="detail-val">' + (s.dataType || '-') + '</div></div>';
+        html += '<div class="detail-item"><div class="detail-key">手机操作</div><div class="detail-val">' + (s.phoneAction || '-') + '</div></div>';
+        html += '<div class="detail-item"><div class="detail-key">丢失原因</div><div class="detail-val">' + (s.lostReason || '-') + '</div></div>';
+        html += '<div class="detail-item"><div class="detail-key">恢复概率</div><div class="detail-val">' + (s.rate || '-') + '</div></div>';
+        html += '</div>';
+
+        html += '</div>';
+      }
+
+      document.getElementById('list').innerHTML = html;
+      showToast('已加载 ' + items.length + ' 条记录');
+    })
+    .catch(function(err) {
+      document.getElementById('list').innerHTML = '<div class="empty">⚠️ 加载失败<br><br>请检查网络连接后点击"刷新数据"<br><br>错误：' + err.message + '</div>';
+    });
+}
+
+// 自动刷新：每30秒
+setInterval(loadData, 30000);
+
+// 首次加载
+loadData();
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+</script>
+</body>
+</html>
