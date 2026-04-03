@@ -73,6 +73,27 @@ body {
 }
 .input-field::placeholder { color: rgba(255,255,255,0.2); }
 .input-field:focus { border-color: rgba(108,92,231,0.6); background: rgba(255,255,255,0.06); box-shadow: 0 0 0 3px rgba(108,92,231,0.1); }
+/* 文本域 */
+.textarea-field {
+  width: 100%; padding: 15px 16px; border-radius: 14px;
+  border: 1.5px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04);
+  color: #fff; font-size: 15px; outline: none; transition: all 0.25s;
+  -webkit-appearance: none; resize: vertical; min-height: 120px; line-height: 1.6;
+  font-family: inherit;
+}
+.textarea-field::placeholder { color: rgba(255,255,255,0.2); }
+.textarea-field:focus { border-color: rgba(108,92,231,0.6); background: rgba(255,255,255,0.06); box-shadow: 0 0 0 3px rgba(108,92,231,0.1); }
+.char-count { text-align: right; font-size: 11px; color: rgba(255,255,255,0.2); margin-top: 6px; }
+/* 快捷标签 */
+.quick-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.quick-tag {
+  padding: 8px 14px; border-radius: 10px; font-size: 13px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.quick-tag:active { transform: scale(0.95); }
+.quick-tag.used { background: rgba(108,92,231,0.15); border-color: rgba(108,92,231,0.4); color: #a78bfa; }
 
 .btn-row { display: flex; gap: 12px; margin-top: 24px; }
 .btn {
@@ -93,11 +114,12 @@ body {
 .result-title { text-align: center; font-size: 20px; font-weight: 800; margin-bottom: 4px; }
 .result-subtitle { text-align: center; font-size: 12px; color: rgba(255,255,255,0.35); margin-bottom: 24px; }
 .result-section { margin-bottom: 16px; }
-.result-section-title { font-size: 12px; color: rgba(255,255,255,0.35); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; padding-left: 2px; }
-.result-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 14px; }
+.result-section-title { font-size: 12px; color: rgba(255,255,255,0.35); font-weight: 600; letter-spacing: 1px; margin-bottom: 10px; padding-left: 2px; }
+.result-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 14px; }
 .result-row:last-child { border-bottom: none; }
-.result-key { color: rgba(255,255,255,0.4); }
-.result-val { font-weight: 600; text-align: right; max-width: 60%; }
+.result-key { color: rgba(255,255,255,0.4); white-space: nowrap; }
+.result-val { font-weight: 600; text-align: right; max-width: 65%; word-break: break-all; }
+.result-desc { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 12px 14px; font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.6; }
 
 .advice-box { margin-top: 16px; padding: 18px; border-radius: 16px; background: linear-gradient(135deg, rgba(0,206,201,0.08), rgba(108,92,231,0.08)); border: 1px solid rgba(0,206,201,0.12); }
 .advice-rate { text-align: center; font-size: 36px; font-weight: 900; background: linear-gradient(135deg, #00cec9, #6C5CE7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
@@ -137,18 +159,19 @@ body {
 
   <div class="progress-wrap" id="progressWrap">
     <div class="progress-info">
-      <span class="step-label" id="stepLabel">第 1 步 / 共 6 步</span>
+      <span class="step-label" id="stepLabel">第 1 步 / 共 7 步</span>
       <span id="stepPercent">0%</span>
     </div>
     <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressBar" style="width: 0%"></div></div>
   </div>
 
-  <!-- 第一步：手机类型 -->
+  <!-- ========== 第1步：手机类型 ========== -->
   <div class="page active" id="page1">
     <div class="card">
       <div class="card-icon">🔧</div>
       <div class="card-title">手机类型</div>
       <div class="card-desc">请选择您需要恢复数据的手机品牌</div>
+      <!-- ✏️ 增减选项：复制/删除整个 option-item -->
       <div class="option-list">
         <div class="option-item" data-value="苹果 iPhone" onclick="pick('phoneType',this)"><span class="option-emoji">🍎</span><span class="option-label">苹果 iPhone</span><span class="radio"></span></div>
         <div class="option-item" data-value="华为" onclick="pick('phoneType',this)"><span class="option-emoji">📲</span><span class="option-label">华为</span><span class="radio"></span></div>
@@ -157,11 +180,11 @@ body {
         <div class="option-item" data-value="vivo" onclick="pick('phoneType',this)"><span class="option-emoji">📱</span><span class="option-label">vivo</span><span class="radio"></span></div>
         <div class="option-item" data-value="其他品牌" onclick="pick('phoneType',this)"><span class="option-emoji">📟</span><span class="option-label">其他品牌</span><span class="radio"></span></div>
       </div>
-      <div class="btn-row"><button class="btn btn-next" onclick="next(2)" disabled id="btn1">下一步 →</button></div>
+      <div class="btn-row"><button class="btn btn-next" onclick="goStep(2)" disabled id="btn1">下一步 →</button></div>
     </div>
   </div>
 
-  <!-- 第二步：数据丢失时间 -->
+  <!-- ========== 第2步：数据丢失时间 ========== -->
   <div class="page" id="page2">
     <div class="card">
       <div class="card-icon">⏰</div>
@@ -173,11 +196,11 @@ body {
         <div class="option-item" data-value="3年内" onclick="pick('lostTime',this)"><span class="option-emoji">🟠</span><span class="option-label">3年内</span><span class="radio"></span></div>
         <div class="option-item" data-value="3年以上" onclick="pick('lostTime',this)"><span class="option-emoji">🔴</span><span class="option-label">3年以上</span><span class="radio"></span></div>
       </div>
-      <div class="btn-row"><button class="btn btn-prev" onclick="prev(1)">← 上一步</button><button class="btn btn-next" onclick="next(3)" disabled id="btn2">下一步 →</button></div>
+      <div class="btn-row"><button class="btn btn-prev" onclick="goStep(1)">← 上一步</button><button class="btn btn-next" onclick="goStep(3)" disabled id="btn2">下一步 →</button></div>
     </div>
   </div>
 
-  <!-- 第三步：需要恢复的内容 -->
+  <!-- ========== 第3步：需要恢复的内容 ========== -->
   <div class="page" id="page3">
     <div class="card">
       <div class="card-icon">📋</div>
@@ -190,11 +213,11 @@ body {
         <div class="option-item" data-value="相册照片" onclick="pick('dataType',this)"><span class="option-emoji">🖼️</span><span class="option-label">相册照片</span><span class="radio"></span></div>
         <div class="option-item" data-value="其他数据" onclick="pick('dataType',this)"><span class="option-emoji">📁</span><span class="option-label">其他数据</span><span class="radio"></span></div>
       </div>
-      <div class="btn-row"><button class="btn btn-prev" onclick="prev(2)">← 上一步</button><button class="btn btn-next" onclick="next(4)" disabled id="btn3">下一步 →</button></div>
+      <div class="btn-row"><button class="btn btn-prev" onclick="goStep(2)">← 上一步</button><button class="btn btn-next" onclick="goStep(4)" disabled id="btn3">下一步 →</button></div>
     </div>
   </div>
 
-  <!-- 第四步：手机其他操作 -->
+  <!-- ========== 第4步：手机其他操作 ========== -->
   <div class="page" id="page4">
     <div class="card">
       <div class="card-icon">⚙️</div>
@@ -208,12 +231,41 @@ body {
         <div class="option-item" data-value="换手机做过迁移" onclick="pick('phoneAction',this)"><span class="option-emoji">✅</span><span class="option-label">换过手机，做过数据迁移</span><span class="radio"></span></div>
         <div class="option-item" data-value="没有任何操作" onclick="pick('phoneAction',this)"><span class="option-emoji">🟢</span><span class="option-label">没有任何操作</span><span class="radio"></span></div>
       </div>
-      <div class="btn-row"><button class="btn btn-prev" onclick="prev(3)">← 上一步</button><button class="btn btn-next" onclick="next(5)" disabled id="btn4">下一步 →</button></div>
+      <div class="btn-row"><button class="btn btn-prev" onclick="goStep(3)">← 上一步</button><button class="btn btn-next" onclick="goStep(5)" disabled id="btn4">下一步 →</button></div>
     </div>
   </div>
 
-  <!-- 第五步：数据丢失原因 -->
+  <!-- ========== 第5步：情况补充描述（新增） ========== -->
   <div class="page" id="page5">
+    <div class="card">
+      <div class="card-icon">💬</div>
+      <div class="card-title">情况补充描述</div>
+      <div class="card-desc">请详细描述一下您的情况，越详细越有助于工程师评估</div>
+      <!--
+        ✏️ 快捷标签：点击自动添加到输入框
+        增减标签：复制/删除整个 quick-tag 块
+      -->
+      <div class="quick-tags">
+        <span class="quick-tag" onclick="addTag(this)">和前男友的聊天记录</span>
+        <span class="quick-tag" onclick="addTag(this)">有重要工作文件</span>
+        <span class="quick-tag" onclick="addTag(this)">老人照片</span>
+        <span class="quick-tag" onclick="addTag(this)">转账记录</span>
+        <span class="quick-tag" onclick="addTag(this)">合同文件</span>
+        <span class="quick-tag" onclick="addTag(this)">孩子成长记录</span>
+      </div>
+      <div class="input-group">
+        <textarea class="textarea-field" id="descInput" placeholder="例如：我是和前男友分手后把微信聊天记录删了，里面有我们三年的聊天记录和转账记录，对我很重要，想恢复..." maxlength="500" oninput="updateCharCount()"></textarea>
+        <div class="char-count"><span id="charCount">0</span>/500</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-prev" onclick="goStep(4)">← 上一步</button>
+        <button class="btn btn-next" onclick="goStep(6)" id="btn5">下一步 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 第6步：数据丢失原因 ========== -->
+  <div class="page" id="page6">
     <div class="card">
       <div class="card-icon">🔍</div>
       <div class="card-title">数据丢失原因</div>
@@ -228,12 +280,12 @@ body {
         <div class="option-item" data-value="恢复出厂设置" onclick="pick('lostReason',this)"><span class="option-emoji">🔄</span><span class="option-label">恢复出厂设置</span><span class="radio"></span></div>
         <div class="option-item" data-value="其他原因" onclick="pick('lostReason',this)"><span class="option-emoji">❓</span><span class="option-label">其他原因</span><span class="radio"></span></div>
       </div>
-      <div class="btn-row"><button class="btn btn-prev" onclick="prev(4)">← 上一步</button><button class="btn btn-next" onclick="next(6)" disabled id="btn5">下一步 →</button></div>
+      <div class="btn-row"><button class="btn btn-prev" onclick="goStep(5)">← 上一步</button><button class="btn btn-next" onclick="goStep(7)" disabled id="btn6">下一步 →</button></div>
     </div>
   </div>
 
-  <!-- 第六步：联系方式 -->
-  <div class="page" id="page6">
+  <!-- ========== 第7步：联系方式 ========== -->
+  <div class="page" id="page7">
     <div class="card">
       <div class="card-icon">📝</div>
       <div class="card-title">联系方式</div>
@@ -246,32 +298,40 @@ body {
         <label class="input-label">微信号（选填）</label>
         <input class="input-field" id="wechatInput" type="text" placeholder="请输入您的微信号">
       </div>
-      <div class="btn-row"><button class="btn btn-prev" onclick="prev(5)">← 上一步</button><button class="btn btn-submit" onclick="submitForm()" id="btn6">提交检测单</button></div>
+      <div class="btn-row"><button class="btn btn-prev" onclick="goStep(6)">← 上一步</button><button class="btn btn-submit" onclick="submitForm()" id="btn7">提交检测单</button></div>
     </div>
   </div>
 
-  <!-- 结果页 -->
+  <!-- ========== 结果页 ========== -->
   <div class="page" id="pageResult">
     <div class="result-card">
       <div class="result-badge">✅ 检测单已生成</div>
       <div class="result-title">📋 数据恢复检测单</div>
       <div class="result-subtitle" id="resultTime"></div>
+
       <div class="result-section">
         <div class="result-section-title">基本信息</div>
         <div class="result-row"><span class="result-key">手机类型</span><span class="result-val" id="rPhone"></span></div>
         <div class="result-row"><span class="result-key">丢失时间</span><span class="result-val" id="rLostTime"></span></div>
         <div class="result-row"><span class="result-key">恢复内容</span><span class="result-val" id="rDataType"></span></div>
       </div>
+
       <div class="result-section">
         <div class="result-section-title">详细情况</div>
         <div class="result-row"><span class="result-key">手机操作</span><span class="result-val" id="rAction"></span></div>
         <div class="result-row"><span class="result-key">丢失原因</span><span class="result-val" id="rReason"></span></div>
+        <div id="rDescRow" style="display:none;">
+          <div style="padding: 8px 0;"><span class="result-key">情况描述</span></div>
+          <div class="result-desc" id="rDesc"></div>
+        </div>
       </div>
+
       <div class="result-section">
         <div class="result-section-title">联系方式</div>
         <div class="result-row"><span class="result-key">联系电话</span><span class="result-val" id="rPhoneNum"></span></div>
         <div class="result-row" id="rWechatRow" style="display:none;"><span class="result-key">微信号</span><span class="result-val" id="rWechat"></span></div>
       </div>
+
       <div class="advice-box">
         <div class="advice-rate" id="adviceRate"></div>
         <div class="advice-rate-label">预计恢复成功率</div>
@@ -281,6 +341,7 @@ body {
           数据恢复由专业机构工程师进行操作，持有相关资质证书，并与客户签署隐私保密协议，全程保障您的数据安全与个人隐私。
         </div>
       </div>
+
       <div class="submit-status ok" id="submitStatus">✅ 检测单已提交，工作人员会尽快联系您！</div>
       <button class="copy-btn" id="copyBtn" onclick="copyResult()">📋 一键复制检测单</button>
     </div>
@@ -292,32 +353,27 @@ body {
 // ============================================
 // 表单数据
 // ============================================
-const D = { phoneType:'', lostTime:'', dataType:'', phoneAction:'', lostReason:'', phone:'', wechat:'' };
-let currentStep = 1;
+var D = { phoneType:'', lostTime:'', dataType:'', phoneAction:'', description:'', lostReason:'', phone:'', wechat:'' };
+var currentStep = 1;
 
 // ============================================
 // ✏️ 后台配置
 //
-// 📧 邮件通知（FormSubmit.co）
+// 📧 邮件通知 + 网页后台（FormSubmit.co，国内可用）
 //    收件邮箱：575205396@qq.com
-//    首次使用需点验证邮件确认
-//    查看记录：https://formsubmit.co/dashboard/575205396@qq.com
+//    首次使用：第一次有人提交后邮箱会收到验证邮件，点确认即可
+//    查看所有记录：https://formsubmit.co/dashboard/575205396@qq.com
 //
-// 🌐 网页后台（JSONBlob.com，免费无需注册）
-//    Blob ID：019d51ab-21f8-7b15-a1f1-8ae3cc033cf5
-//    用 dashboard.html 打开即可查看所有提交
-//    ⚠️ 此 ID 仅你自己使用，勿泄露
+//    ✅ 已移除 JSONBlob（国内不稳定），改用纯 FormSubmit
 // ============================================
-const FORM_EMAIL = '575205396@qq.com';
-const FORM_ENDPOINT = 'https://formsubmit.co/ajax/' + FORM_EMAIL;
-const BLOB_ID = '019d51ab-21f8-7b15-a1f1-8ae3cc033cf5';
-const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/' + BLOB_ID;
+var FORM_EMAIL = '575205396@qq.com';
+var FORM_ENDPOINT = 'https://formsubmit.co/ajax/' + FORM_EMAIL;
 
 // ============================================
 // 选项选择
 // ============================================
 function pick(field, el) {
-  el.parentElement.querySelectorAll('.option-item').forEach(i => i.classList.remove('selected'));
+  el.parentElement.querySelectorAll('.option-item').forEach(function(i){ i.classList.remove('selected'); });
   el.classList.add('selected');
   D[field] = el.dataset.value;
   var btn = document.getElementById('btn' + currentStep);
@@ -325,27 +381,51 @@ function pick(field, el) {
 }
 
 // ============================================
-// 步骤导航
+// 快捷标签（情况补充描述页）
+// ✏️ 修改标签内容：直接改文字即可
+// ============================================
+function addTag(el) {
+  var input = document.getElementById('descInput');
+  var tagText = el.textContent;
+  // 如果已使用则取消
+  if (el.classList.contains('used')) {
+    el.classList.remove('used');
+    input.value = input.value.replace(tagText + '，', '');
+    return;
+  }
+  el.classList.add('used');
+  // 追加到输入框
+  if (input.value && !input.value.endsWith('，') && !input.value.endsWith(' ')) {
+    input.value += '，';
+  }
+  input.value += tagText;
+  updateCharCount();
+}
+
+function updateCharCount() {
+  var len = document.getElementById('descInput').value.length;
+  document.getElementById('charCount').textContent = len;
+}
+
+// ============================================
+// 步骤导航（共7步）
 // ============================================
 function goStep(n) {
   currentStep = n;
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  if (n <= 6) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  if (n <= 7) {
     document.getElementById('page' + n).classList.add('active');
-    var pct = Math.round(((n - 1) / 6) * 100);
+    var pct = Math.round(((n - 1) / 7) * 100);
     document.getElementById('progressBar').style.width = pct + '%';
-    document.getElementById('stepLabel').textContent = '第 ' + n + ' 步 / 共 6 步';
+    document.getElementById('stepLabel').textContent = '第 ' + n + ' 步 / 共 7 步';
     document.getElementById('stepPercent').textContent = pct + '%';
     document.getElementById('progressWrap').classList.remove('hidden');
   } else {
     document.getElementById('pageResult').classList.add('active');
     document.getElementById('progressWrap').classList.add('hidden');
-    document.getElementById('progressBar').style.width = '100%';
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-function next(n) { goStep(n); }
-function prev(n) { goStep(n); }
 
 // ============================================
 // 提交表单
@@ -355,14 +435,19 @@ function submitForm() {
   var wechat = document.getElementById('wechatInput').value.trim();
   if (!phone) { showToast('请输入手机号码'); return; }
   if (!/^1\d{10}$/.test(phone)) { showToast('请输入正确的手机号码'); return; }
-  D.phone = phone; D.wechat = wechat;
 
-  var btn = document.getElementById('btn6');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>提交中...';
+  D.phone = phone;
+  D.wechat = wechat;
+  D.description = document.getElementById('descInput').value.trim();
+
+  var btn = document.getElementById('btn7');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>提交中...';
 
   var now = new Date();
   var timeStr = now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+pad(now.getHours())+':'+pad(now.getMinutes());
 
+  // 填充结果页
   document.getElementById('resultTime').textContent = '检测时间：' + timeStr;
   document.getElementById('rPhone').textContent = D.phoneType;
   document.getElementById('rLostTime').textContent = D.lostTime;
@@ -370,35 +455,59 @@ function submitForm() {
   document.getElementById('rAction').textContent = D.phoneAction;
   document.getElementById('rReason').textContent = D.lostReason;
   document.getElementById('rPhoneNum').textContent = D.phone;
-  if (wechat) { document.getElementById('rWechatRow').style.display = 'flex'; document.getElementById('rWechat').textContent = wechat; }
-  else { document.getElementById('rWechatRow').style.display = 'none'; }
+
+  if (D.description) {
+    document.getElementById('rDescRow').style.display = 'block';
+    document.getElementById('rDesc').textContent = D.description;
+  } else {
+    document.getElementById('rDescRow').style.display = 'none';
+  }
+
+  if (wechat) {
+    document.getElementById('rWechatRow').style.display = 'flex';
+    document.getElementById('rWechat').textContent = wechat;
+  } else {
+    document.getElementById('rWechatRow').style.display = 'none';
+  }
 
   var advice = getAdvice(D.phoneAction, D.lostTime, D.dataType);
   document.getElementById('adviceRate').textContent = advice.rate;
   document.getElementById('adviceText').innerHTML = advice.text;
   generateCopyText(timeStr);
 
-  // 1. 保存到 JSONBlob（网页后台用）
-  var record = { time:timeStr, phoneType:D.phoneType, lostTime:D.lostTime, dataType:D.dataType, phoneAction:D.phoneAction, lostReason:D.lostReason, phone:D.phone, wechat:wechat||'', rate:advice.rate };
+  // 提交到 FormSubmit（纯邮件方式，国内稳定）
+  var mailData = {
+    _subject: '📱 新客户数据恢复检测单',
+    '手机类型': D.phoneType,
+    '丢失时间': D.lostTime,
+    '恢复内容': D.dataType,
+    '手机操作': D.phoneAction,
+    '情况描述': D.description || '无',
+    '丢失原因': D.lostReason,
+    '联系电话': D.phone,
+    '微信号': wechat || '未填写',
+    '检测时间': timeStr,
+    '恢复概率': advice.rate
+  };
 
-  fetch(BLOB_URL).then(function(r){ return r.json(); }).then(function(data){
-    if (!data.submissions) data.submissions = [];
-    data.submissions.unshift(record);
-    if (data.submissions.length > 500) data.submissions = data.submissions.slice(0, 500);
-    return fetch(BLOB_URL, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
-  }).then(function(){
+  fetch(FORM_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify(mailData)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(){
     document.getElementById('submitStatus').className = 'submit-status ok';
     document.getElementById('submitStatus').innerHTML = '✅ 检测单已提交，工作人员会尽快联系您！';
-  }).catch(function(){
+  })
+  .catch(function(){
     document.getElementById('submitStatus').className = 'submit-status err';
-    document.getElementById('submitStatus').innerHTML = '⚠️ 网络原因提交失败，请复制检测单发给客服。';
-  }).finally(function(){
-    // 2. 发邮件通知（异步，不阻塞）
-    var mailData = { _subject:'📱 新客户数据恢复检测单', '手机类型':D.phoneType, '丢失时间':D.lostTime, '恢复内容':D.dataType, '手机操作':D.phoneAction, '丢失原因':D.lostReason, '联系电话':D.phone, '微信号':wechat||'未填写', '检测时间':timeStr, '恢复概率':advice.rate };
-    fetch(FORM_ENDPOINT, { method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify(mailData) }).catch(function(){});
-
-    btn.disabled = false; btn.textContent = '提交检测单';
-    goStep(7);
+    document.getElementById('submitStatus').innerHTML = '⚠️ 网络原因自动提交失败，请复制下方检测单发给客服';
+  })
+  .finally(function(){
+    btn.disabled = false;
+    btn.textContent = '提交检测单';
+    goStep(8);
   });
 }
 
@@ -415,58 +524,85 @@ function getAdvice(action, lostTime, dataType) {
   if (isLowRate) {
     var base = action === '恢复出厂设置' ? 50 : 55;
     rate = (base + Math.floor(Math.random() * 16)) + '%';
-    var actionTip = '';
-    if (action === '恢复出厂设置') actionTip = '恢复出厂设置会清除存储分区的大部分数据，但专业设备仍可通过底层芯片扫描尝试恢复残留数据碎片。';
-    else if (action === '卸载相关APP') actionTip = '卸载APP通常会清除应用缓存和数据目录，但数据库文件可能仍有残留，需要深度扫描。';
-    else if (action === '手机系统更新') actionTip = '系统更新过程中可能会覆盖部分存储区域，建议尽快进行检测，避免进一步数据覆盖。';
-    else actionTip = '旧手机上的数据通常仍然保留，请提供旧手机进行检测恢复。';
-    text = '<b>💡 恢复建议：</b><br>' + actionTip + '<br><br><b>📌 温馨提示：</b>请尽量不要继续使用手机，避免新数据覆盖需要恢复的区域。';
+    var tip = '';
+    if (action === '恢复出厂设置') tip = '恢复出厂设置会清除存储分区的大部分数据，但专业设备仍可通过底层芯片扫描尝试恢复残留数据碎片。';
+    else if (action === '卸载相关APP') tip = '卸载APP通常会清除应用缓存和数据目录，但数据库文件可能仍有残留，需要深度扫描。';
+    else if (action === '手机系统更新') tip = '系统更新过程中可能会覆盖部分存储区域，建议尽快进行检测，避免进一步数据覆盖。';
+    else tip = '旧手机上的数据通常仍然保留，请提供旧手机进行检测恢复。';
+    text = '<b>💡 恢复建议：</b><br>' + tip + '<br><br><b>📌 温馨提示：</b>请尽量不要继续使用手机，避免新数据覆盖需要恢复的区域。';
   } else {
     rate = (90 + Math.floor(Math.random() * 10)) + '%';
-    var typeTip = '';
-    if (dataType === '微信聊天记录') typeTip = '微信聊天记录在手机本地有数据库备份，恢复成功率非常高。请暂时不要使用微信。';
-    else if (dataType === 'QQ聊天记录') typeTip = 'QQ聊天记录存储在本地数据库中，恢复成功率很高。建议暂时不要登录QQ。';
-    else if (dataType === '通话记录') typeTip = '通话记录存储在系统数据库中，恢复成功率极高。';
-    else if (dataType === '相册照片') typeTip = '照片文件通常存储在相册目录，恢复成功率非常高。请勿继续拍照。';
-    else typeTip = '数据恢复成功率很高，请保留手机当前状态。';
-    text = '<b>💡 恢复建议：</b><br>' + typeTip + '<br><br><b>📌 温馨提示：</b>在等待恢复期间，请尽量不要使用手机或进行大文件操作。';
+    var tip2 = '';
+    if (dataType === '微信聊天记录') tip2 = '微信聊天记录在手机本地有数据库备份，恢复成功率非常高。请暂时不要使用微信。';
+    else if (dataType === 'QQ聊天记录') tip2 = 'QQ聊天记录存储在本地数据库中，恢复成功率很高。建议暂时不要登录QQ。';
+    else if (dataType === '通话记录') tip2 = '通话记录存储在系统数据库中，恢复成功率极高。';
+    else if (dataType === '相册照片') tip2 = '照片文件通常存储在相册目录，恢复成功率非常高。请勿继续拍照。';
+    else tip2 = '数据恢复成功率很高，请保留手机当前状态。';
+    text = '<b>💡 恢复建议：</b><br>' + tip2 + '<br><br><b>📌 温馨提示：</b>在等待恢复期间，请尽量不要使用手机或进行大文件操作。';
   }
-  return { rate:rate, text:text };
+  return { rate: rate, text: text };
 }
 
 // ============================================
 // 复制文本模板
+// ✏️ 修改下方文字可自定义复制内容格式
 // ============================================
 var copyText = '';
 function generateCopyText(timeStr) {
   var wc = D.wechat ? '\n微信号：' + D.wechat : '';
-  copyText = '📋 数据恢复检测单\n━━━━━━━━━━━━━━━\n检测时间：' + timeStr + '\n手机类型：' + D.phoneType + '\n丢失时间：' + D.lostTime + '\n恢复内容：' + D.dataType + '\n手机操作：' + D.phoneAction + '\n丢失原因：' + D.lostReason + '\n联系电话：' + D.phone + wc + '\n━━━━━━━━━━━━━━━\n🔒 数据恢复由专业机构工程师操作，持有相关资质，签署隐私保密协议';
+  var desc = D.description ? '\n情况描述：' + D.description : '';
+  copyText =
+    '📋 数据恢复检测单\n' +
+    '━━━━━━━━━━━━━━━\n' +
+    '检测时间：' + timeStr + '\n' +
+    '手机类型：' + D.phoneType + '\n' +
+    '丢失时间：' + D.lostTime + '\n' +
+    '恢复内容：' + D.dataType + '\n' +
+    '手机操作：' + D.phoneAction + '\n' +
+    desc + '\n' +
+    '丢失原因：' + D.lostReason + '\n' +
+    '联系电话：' + D.phone + wc + '\n' +
+    '━━━━━━━━━━━━━━━\n' +
+    '🔒 数据恢复由专业机构工程师操作，持有相关资质，签署隐私保密协议';
 }
 
 function copyResult() {
-  if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(copyText).then(onCopied).catch(fallbackCopy); } else { fallbackCopy(); }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(copyText).then(onCopied).catch(fbCopy);
+  } else { fbCopy(); }
 }
-function fallbackCopy() {
-  var ta = document.createElement('textarea'); ta.value = copyText; ta.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(ta); ta.select();
-  try { document.execCommand('copy'); onCopied(); } catch(e) { showToast('复制失败'); } document.body.removeChild(ta);
+function fbCopy() {
+  var ta = document.createElement('textarea'); ta.value = copyText;
+  ta.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); onCopied(); } catch(e) { showToast('复制失败，请手动复制'); }
+  document.body.removeChild(ta);
 }
 function onCopied() {
-  var btn = document.getElementById('copyBtn'); btn.textContent = '✅ 已复制，发给客服即可！'; btn.classList.add('done'); showToast('已复制到剪贴板');
+  var btn = document.getElementById('copyBtn');
+  btn.textContent = '✅ 已复制，发给客服即可！'; btn.classList.add('done');
+  showToast('已复制到剪贴板');
   setTimeout(function(){ btn.textContent = '📋 一键复制检测单'; btn.classList.remove('done'); }, 3000);
 }
 
 function resetForm() {
-  D.phoneType=''; D.lostTime=''; D.dataType=''; D.phoneAction=''; D.lostReason=''; D.phone=''; D.wechat='';
+  D.phoneType=''; D.lostTime=''; D.dataType=''; D.phoneAction=''; D.description=''; D.lostReason=''; D.phone=''; D.wechat='';
   document.querySelectorAll('.option-item').forEach(function(i){ i.classList.remove('selected'); });
-  document.getElementById('phoneInput').value = ''; document.getElementById('wechatInput').value = '';
-  for (var i=1;i<=5;i++){ var b=document.getElementById('btn'+i); if(b) b.disabled=true; }
+  document.querySelectorAll('.quick-tag').forEach(function(t){ t.classList.remove('used'); });
+  document.getElementById('descInput').value = '';
+  document.getElementById('phoneInput').value = '';
+  document.getElementById('wechatInput').value = '';
+  updateCharCount();
+  for (var i=1;i<=6;i++){ var b=document.getElementById('btn'+i); if(b) b.disabled=true; }
   document.getElementById('submitStatus').className = 'submit-status ok';
   document.getElementById('submitStatus').innerHTML = '✅ 检测单已提交，工作人员会尽快联系您！';
   goStep(1);
 }
 
 function pad(n) { return n < 10 ? '0' + n : '' + n; }
-function showToast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },2000); }
+function showToast(msg) {
+  var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2000);
+}
 </script>
 </body>
 </html>
